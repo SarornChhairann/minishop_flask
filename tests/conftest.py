@@ -23,6 +23,8 @@ def app(tmp_path):
         "BAKONG_ACCOUNT_ID": "",
         "MERCHANT_NAME": "",
         "MERCHANT_CITY": "",
+        "BAKONG_PROXY_URL": "",
+        "BAKONG_PROXY_SECRET": "",
     })
     with app.app_context():
         db.create_all()

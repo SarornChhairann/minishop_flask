@@ -15,6 +15,7 @@ from . import bp
 
 PLACED_ORDERS_KEY = "placed_orders"
 CHECKOUT_QR_KEY = "checkout_qr"
+CHECKOUT_GUEST_KEY = "checkout_guest"
 # KHQR codes expire after a day. Issue a fresh one well before that.
 CHECKOUT_QR_MAX_AGE = 12 * 60 * 60
 
@@ -114,30 +115,46 @@ def checkout():
         flash("Your cart is empty.", "info")
         return redirect(url_for("storefront.cart_view"))
 
-    form = CheckoutForm()
+    saved = session.get(CHECKOUT_GUEST_KEY)
+    form = CheckoutForm(data=saved) if request.method == "GET" else CheckoutForm()
     if form.validate_on_submit():
-        order = _place_order(form)
-        if order is not None:
-            session[PLACED_ORDERS_KEY] = (session.get(PLACED_ORDERS_KEY) or [])[-19:] + [order.id]
-            session.pop("checkout_ref", None)
-            session.pop(CHECKOUT_QR_KEY, None)
-            return redirect(url_for("storefront.order_confirmation", order_id=order.id))
-        lines, total = cart.lines()
+        session[CHECKOUT_GUEST_KEY] = {
+            "full_name": form.full_name.data.strip(),
+            "email": form.email.data.strip(),
+            "phone": form.phone.data.strip(),
+            "address": form.address.data.strip(),
+        }
+        return _render_checkout(form, lines, total, guest=session[CHECKOUT_GUEST_KEY])
+    if request.method == "GET" and saved and request.args.get("edit") != "1":
+        return _render_checkout(form, lines, total, guest=saved)
     return _render_checkout(form, lines, total)
 
 
 @bp.post("/checkout/payment-status")
 def checkout_payment_status():
-    """One manual check of the KHQR on screen. The md5 comes from the session, never the browser."""
+    """One manual check. A paid result places the order from the details already stored."""
     lines, total = cart.lines()
     if not lines:
         flash("Your cart is empty.", "info")
         return redirect(url_for("storefront.cart_view"))
+    guest = session.get(CHECKOUT_GUEST_KEY)
+    if not guest:
+        flash("Enter your details before paying.", "info")
+        return redirect(url_for("storefront.checkout"))
     try:
         payment = check_payment(payload_md5(_checkout_payload(total)))
     except KHQRConfigError as exc:
         payment = ("error", str(exc))
-    return _render_checkout(CheckoutForm(formdata=None), lines, total, payment=payment)
+    if payment[0] == "paid":
+        order = _place_order(guest)
+        if order is not None:
+            session[PLACED_ORDERS_KEY] = (session.get(PLACED_ORDERS_KEY) or [])[-19:] + [order.id]
+            session.pop(CHECKOUT_GUEST_KEY, None)
+            session.pop("checkout_ref", None)
+            session.pop(CHECKOUT_QR_KEY, None)
+            return redirect(url_for("storefront.order_confirmation", order_id=order.id))
+        lines, total = cart.lines()
+    return _render_checkout(CheckoutForm(data=guest), lines, total, payment=payment, guest=guest)
 
 
 def _checkout_reference():
@@ -161,19 +178,21 @@ def _checkout_payload(total):
     return payload
 
 
-def _render_checkout(form, lines, total, payment=None):
-    qr_image, qr_error = None, None
-    try:
-        qr_image = data_uri(_checkout_payload(total))
-    except KHQRConfigError as exc:
-        qr_error = str(exc)
+def _render_checkout(form, lines, total, payment=None, guest=None):
+    qr_image, qr_error, reference = None, None, None
+    if guest:
+        reference = _checkout_reference()
+        try:
+            qr_image = data_uri(_checkout_payload(total))
+        except KHQRConfigError as exc:
+            qr_error = str(exc)
     return render_template(
         "storefront/checkout.html", form=form, lines=lines, total=total,
-        qr_image=qr_image, qr_error=qr_error, reference=_checkout_reference(), payment=payment,
+        qr_image=qr_image, qr_error=qr_error, reference=reference, payment=payment, guest=guest,
     )
 
 
-def _place_order(form):
+def _place_order(guest):
     """Validate stock and write order, lines and stock decrement in one transaction."""
     qty_by_id = cart.quantities()
     try:
@@ -197,10 +216,10 @@ def _place_order(form):
             return None
 
         order = Order(
-            customer_name=form.full_name.data.strip(),
-            email=form.email.data.strip(),
-            phone=form.phone.data.strip(),
-            address=form.address.data.strip(),
+            customer_name=guest["full_name"].strip(),
+            email=guest["email"].strip(),
+            phone=guest["phone"].strip(),
+            address=guest["address"].strip(),
         )
         total = Decimal("0.00")
         for pid, qty in qty_by_id.items():

@@ -12,6 +12,18 @@
 <p class="label page-kicker">{{ shop_name }} · Checkout</p>
 <h1 class="display page-title">Checkout</h1>
 <div class="checkout">
+  {% if guest %}
+  <section class="checkout-form" aria-labelledby="details-title">
+    <h2 id="details-title" class="label section-title">Your details</h2>
+    <dl class="checkout-guest">
+      <dt>Full name</dt><dd>{{ guest.full_name }}</dd>
+      <dt>Email address</dt><dd>{{ guest.email }}</dd>
+      <dt>Phone number</dt><dd>{{ guest.phone }}</dd>
+      <dt>Shipping address</dt><dd class="pre">{{ guest.address }}</dd>
+    </dl>
+    <a class="btn btn--line" href="{{ url_for('storefront.checkout', edit=1) }}">Edit details</a>
+  </section>
+  {% else %}
   <form class="checkout-form" method="post" novalidate>
     {{ form.hidden_tag() }}
     <h2 class="label section-title">Your details</h2>
@@ -19,11 +31,13 @@
     {{ field(form.email, type='email', autocomplete='email') }}
     {{ field(form.phone, type='tel', autocomplete='tel') }}
     {{ field(form.address, autocomplete='street-address') }}
-    <button class="btn btn--wide" type="submit">Place order · {{ total|usd }}</button>
-    <p class="checkout-form__note">Scan the KHQR code with your banking app, then place your order.</p>
+    <button class="btn btn--wide" type="submit">Proceed to payment</button>
+    <p class="checkout-form__note">Your order is placed after the payment is confirmed.</p>
   </form>
+  {% endif %}
 
   <aside class="checkout-side">
+    {% if guest %}
     <section class="khqr" aria-labelledby="khqr-title">
       <h2 id="khqr-title" class="label section-title">Pay with KHQR</h2>
       {% if qr_image %}
@@ -36,8 +50,7 @@
       {% if payment %}
       {% set status, message = payment %}
       <p class="khqr__status khqr__status--{{ status }}" role="status">
-        {%- if status == 'paid' %}Paid. You can place your order.
-        {%- elif status == 'unpaid' %}Not paid yet. Scan the code, then check again.
+        {%- if status == 'unpaid' %}Not paid yet. Scan the code, then check again.
         {%- elif status == 'unconfigured' %}{{ message }}
         {%- else %}Could not check the payment: {{ message }}{% endif -%}
       </p>
@@ -46,6 +59,7 @@
       <p class="khqr__error">{{ qr_error }}</p>
       {% endif %}
     </section>
+    {% endif %}
     <section class="order-summary" aria-labelledby="summary-title">
       <h2 id="summary-title" class="label section-title">Order summary</h2>
       <ul class="summary-lines">
