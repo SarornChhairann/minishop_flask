@@ -170,11 +170,13 @@ def _checkout_payload(total):
     reference = _checkout_reference()
     amount = str(Decimal(total).quantize(Decimal("0.01")))
     cached = session.get(CHECKOUT_QR_KEY) or {}
-    if (cached.get("amount") == amount and cached.get("ref") == reference
+    if (cached.get("v") == 2 and cached.get("amount") == amount and cached.get("ref") == reference
             and time.time() - cached.get("issued", 0) < CHECKOUT_QR_MAX_AGE):
         return cached["payload"]
     payload = build_payload(total, reference)
-    session[CHECKOUT_QR_KEY] = {"amount": amount, "ref": reference, "issued": time.time(), "payload": payload}
+    session[CHECKOUT_QR_KEY] = {
+        "v": 2, "amount": amount, "ref": reference, "issued": time.time(), "payload": payload,
+    }
     return payload
 
 
