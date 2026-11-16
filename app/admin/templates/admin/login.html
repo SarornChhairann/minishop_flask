@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block body_class %}admin-login{% endblock %}
+{% block shell %}
+<main id="main" class="login">
+  <form class="login__panel" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p class="login__brand">{{ shop_name }}</p>
+    <h1 class="login__title">Admin sign in</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}<p class="flash flash--{{ category }}" role="alert">{{ message }}</p>{% endfor %}
+    {% endwith %}
+    <div class="field">
+      {{ form.username.label(class="field__label") }}
+      {{ form.username(class="field__input", autocomplete="username", autofocus=true) }}
+    </div>
+    <div class="field">
+      {{ form.password.label(class="field__label") }}
+      {{ form.password(class="field__input", autocomplete="current-password") }}
+    </div>
+    <button class="btn btn--wide" type="submit">Sign in</button>
+  </form>
+</main>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "storefront/base.html" %}
+{% block title %}Order #{{ order.id }} · {{ shop_name }}{% endblock %}
+{% block body_class %}page-order{% endblock %}
+{% block content %}
+<section class="confirmation">
+  <p class="label confirmation__eyebrow">Order confirmed · No. {{ '%04d' % order.id }}</p>
+  <h1 class="display page-title">Thank you, {{ order.customer_name }}.</h1>
+  <p class="lede confirmation__lead">We have received your order and will prepare it for delivery.</p>
+
+  <dl class="confirmation__facts">
+    <div><dt class="label">Order ID</dt><dd>#{{ order.id }}</dd></div>
+    <div><dt class="label">Total amount</dt><dd class="price">{{ order.total|usd }}</dd></div>
+    <div><dt class="label">Date</dt><dd>{{ order.created_at.strftime('%d %b %Y, %H:%M') }}</dd></div>
+  </dl>
+
+  <div class="confirmation__grid">
+    <section class="confirmation__customer">
+      <h2 class="label section-title">Customer</h2>
+      <dl>
+        <dt>Name</dt><dd>{{ order.customer_name }}</dd>
+        <dt>Email</dt><dd>{{ order.email }}</dd>
+        <dt>Phone</dt><dd>{{ order.phone }}</dd>
+        <dt>Shipping address</dt><dd class="pre">{{ order.address }}</dd>
+      </dl>
+    </section>
+    <section class="confirmation__items">
+      <h2 class="label section-title">Items</h2>
+      <ul class="summary-lines">
+        {% for item in order.items %}
+        <li><span>{{ item.product_name }} × {{ item.quantity }}</span><span>{{ item.subtotal|usd }}</span></li>
+        {% endfor %}
+      </ul>
+      <p class="summary-total"><span class="label">Total</span><strong>{{ order.total|usd }}</strong></p>
+      {% if qr_image %}
+      <details class="khqr khqr--small">
+        <summary>Show the KHQR code again</summary>
+        <img class="khqr__image" src="{{ qr_image }}" alt="KHQR payment code for order #{{ order.id }}">
+      </details>
+      {% endif %}
+    </section>
+  </div>
+  <a class="btn" href="{{ url_for('storefront.home') }}">Continue shopping</a>
+</section>
+{% endblock %}

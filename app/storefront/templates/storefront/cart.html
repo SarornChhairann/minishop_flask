@@ -1,0 +1,51 @@
+{% extends "storefront/base.html" %}
+{% block title %}Cart · {{ shop_name }}{% endblock %}
+{% block body_class %}page-cart{% endblock %}
+{% block content %}
+<p class="label page-kicker">{{ shop_name }} · Cart</p>
+<h1 class="display page-title">Your cart</h1>
+{% if lines %}
+<div class="cart">
+  <ul class="cart-lines">
+    {% for line in lines %}
+    <li class="cart-line">
+      <a class="cart-line__media" href="{{ url_for('storefront.product_detail', product_id=line.product.id) }}" tabindex="-1" aria-hidden="true">
+        {% if line.product.image_thumb_url %}<img src="{{ line.product.image_thumb_url }}" alt="" width="120" height="150">{% endif %}
+      </a>
+      <div class="cart-line__info">
+        <h2 class="cart-line__name"><a href="{{ url_for('storefront.product_detail', product_id=line.product.id) }}">{{ line.product.name }}</a></h2>
+        <p class="label cart-line__unit">{{ line.product.price|usd }} each</p>
+        {% if line.exceeds_stock %}<p class="cart-line__warn">Only {{ line.product.stock }} left. Lower the quantity to check out.</p>{% endif %}
+      </div>
+      <form class="cart-line__qty" method="post" action="{{ url_for('storefront.cart_view') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="update">
+        <input type="hidden" name="product_id" value="{{ line.product.id }}">
+        <label><span class="visually-hidden">Quantity for {{ line.product.name }}</span>
+          <input class="qty__input" type="number" name="quantity" value="{{ line.quantity }}" min="1" max="99">
+        </label>
+        <button class="btn btn--small" type="submit">Update</button>
+      </form>
+      <p class="price cart-line__subtotal">{{ line.subtotal|usd }}</p>
+      <form class="cart-line__remove" method="post" action="{{ url_for('storefront.cart_view') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="remove">
+        <input type="hidden" name="product_id" value="{{ line.product.id }}">
+        <button class="btn btn--link" type="submit">Remove<span class="visually-hidden"> {{ line.product.name }}</span></button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  <aside class="cart-summary">
+    <p class="cart-summary__row"><span class="label">Total</span><strong>{{ total|usd }}</strong></p>
+    <a class="btn btn--wide" href="{{ url_for('storefront.checkout') }}">Proceed to checkout</a>
+    <a class="btn btn--link" href="{{ url_for('storefront.home') }}">Continue shopping</a>
+  </aside>
+</div>
+{% else %}
+<section class="empty">
+  <p>Your cart is empty.</p>
+  <a class="btn" href="{{ url_for('storefront.home') }}">Browse the shop</a>
+</section>
+{% endif %}
+{% endblock %}

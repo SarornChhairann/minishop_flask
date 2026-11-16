@@ -1,0 +1,11 @@
+.venv
+node_modules
+.env
+.env.*
+.neon
+local.db
+tests
+app/static/uploads/original/*
+app/static/uploads/thumb/*
+__pycache__
+.pytest_cache

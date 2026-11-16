@@ -1,0 +1,47 @@
+{% extends "storefront/base.html" %}
+{% block body_class %}page-home{% endblock %}
+{% block content %}
+<section class="intro" aria-labelledby="intro-title">
+  <h1 class="display intro__title" id="intro-title">Clothes</h1>
+  <p class="lede intro__tagline">{{ shop_tagline }}</p>
+  <p class="label intro__count">{{ '%02d' % products|length }} pieces</p>
+</section>
+
+<section class="catalogue" id="catalogue" aria-labelledby="catalogue-title">
+  <h2 class="label section-title" id="catalogue-title">The catalogue</h2>
+  {% if products %}
+  <ul class="grid">
+    {% for product in products %}
+    <li class="card">
+      <a class="card__media" href="{{ url_for('storefront.product_detail', product_id=product.id) }}" tabindex="-1" aria-hidden="true">
+        {% if product.image_thumb_url %}<img src="{{ product.image_thumb_url }}" alt="" width="480" height="600" loading="lazy">{% endif %}
+      </a>
+      <div class="card__body">
+        <p class="label card__meta">No. {{ '%02d' % loop.index }} · {% if product.in_stock %}{{ product.stock }} in stock{% else %}<span class="card__out">Sold out</span>{% endif %}</p>
+        <h3 class="card__title"><a href="{{ url_for('storefront.product_detail', product_id=product.id) }}">{{ product.name }}</a></h3>
+        <p class="card__desc">{{ product.description|truncate(90) }}</p>
+        <div class="card__foot">
+          <p class="price card__price">{{ product.price|usd }}</p>
+          <div class="card__actions">
+            <a class="btn btn--line" href="{{ url_for('storefront.product_detail', product_id=product.id) }}">View details</a>
+            {% if product.in_stock %}
+            <form method="post" action="{{ url_for('storefront.cart_view') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="action" value="add">
+              <input type="hidden" name="product_id" value="{{ product.id }}">
+              <input type="hidden" name="quantity" value="1">
+              <input type="hidden" name="next" value="{{ url_for('storefront.home') }}#catalogue">
+              <button class="btn" type="submit">Add to cart</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="catalogue__empty">There are no pieces in the catalogue yet. Please check back soon.</p>
+  {% endif %}
+</section>
+{% endblock %}

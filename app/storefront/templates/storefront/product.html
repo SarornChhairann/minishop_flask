@@ -1,0 +1,49 @@
+{% extends "storefront/base.html" %}
+{% block title %}{{ product.name }} · {{ shop_name }}{% endblock %}
+{% block meta %}
+  <meta property="og:title" content="{{ product.name }}">
+  <meta property="og:description" content="{{ product.description|truncate(150) }}">
+  {% if product.image_original_url %}<meta property="og:image" content="{{ product.image_original_url if product.image_original_url.startswith('http') else request.host_url.rstrip('/') ~ product.image_original_url }}">{% endif %}
+{% endblock %}
+{% block body_class %}page-product{% endblock %}
+{% block content %}
+<nav class="breadcrumb label" aria-label="Breadcrumb"><a href="{{ url_for('storefront.home') }}#catalogue">Catalogue</a> <span aria-hidden="true">/</span> <span>No. {{ '%03d' % product.id }}</span></nav>
+<article class="product-detail">
+  <figure class="product-detail__media">
+    {% if product.image_original_url %}
+    <img src="{{ product.image_original_url }}" alt="{{ product.name }}" width="1200" height="1500">
+    {% endif %}
+  </figure>
+  <div class="product-detail__info">
+    <p class="label">{{ shop_name }} · Piece No. {{ '%03d' % product.id }}</p>
+    <h1 class="display product-detail__name">{{ product.name }}</h1>
+    <p class="price product-detail__price">{{ product.price|usd }}</p>
+    <p class="label stock {{ 'stock--in' if product.in_stock else 'stock--out' }}">
+      {% if product.in_stock %}In stock · {{ product.stock }} available{% else %}Out of stock{% endif %}
+    </p>
+    <div class="product-detail__desc">
+      {% for paragraph in product.description.split('\n') if paragraph.strip() %}<p>{{ paragraph }}</p>{% endfor %}
+    </div>
+
+    {% if product.in_stock %}
+    <form class="add-form" method="post" action="{{ url_for('storefront.cart_view') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="add">
+      <input type="hidden" name="product_id" value="{{ product.id }}">
+      <input type="hidden" name="next" value="{{ url_for('storefront.product_detail', product_id=product.id) }}">
+      <label class="qty">
+        <span class="label qty__label">Quantity</span>
+        <input class="qty__input" type="number" name="quantity" value="1" min="1" max="{{ [product.stock, 99]|min }}" required>
+      </label>
+      <button class="btn btn--wide" type="submit">Add to cart</button>
+    </form>
+    {% endif %}
+
+    <div class="share">
+      <span class="label share__label">Share</span>
+      <a class="share__link" href="{{ share.facebook }}" target="_blank" rel="noopener noreferrer">Facebook</a>
+      <a class="share__link" href="{{ share.telegram }}" target="_blank" rel="noopener noreferrer">Telegram</a>
+    </div>
+  </div>
+</article>
+{% endblock %}

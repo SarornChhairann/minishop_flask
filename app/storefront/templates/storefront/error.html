@@ -1,0 +1,9 @@
+{% extends "storefront/base.html" %}
+{% block title %}{{ title }} · {{ shop_name }}{% endblock %}
+{% block content %}
+<section class="empty">
+  <h1 class="display page-title">{{ title }}</h1>
+  <p>{{ message }}</p>
+  <a class="btn" href="{{ url_for('storefront.home') }}">Back to the shop</a>
+</section>
+{% endblock %}

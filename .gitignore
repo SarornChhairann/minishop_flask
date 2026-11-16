@@ -1,0 +1,15 @@
+.venv/
+# Local secrets. .env.example stays tracked so the variable list can be committed.
+.env
+.env.*
+!.env.example
+local.db
+__pycache__/
+.pytest_cache/
+.vercel/
+app/static/uploads/original/*
+app/static/uploads/thumb/*
+!app/static/uploads/original/.gitkeep
+!app/static/uploads/thumb/.gitkeep
+.neon
+node_modules/

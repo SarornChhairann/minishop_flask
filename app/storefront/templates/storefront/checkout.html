@@ -1,0 +1,60 @@
+{% extends "storefront/base.html" %}
+{% block title %}Checkout · {{ shop_name }}{% endblock %}
+{% block body_class %}page-checkout{% endblock %}
+{% macro field(f, type=None) %}
+<div class="field{% if f.errors %} field--error{% endif %}">
+  {{ f.label(class="field__label") }}
+  {% if type %}{{ f(class="field__input", type=type, autocomplete=kwargs.get('autocomplete', 'on')) }}{% else %}{{ f(class="field__input", autocomplete=kwargs.get('autocomplete', 'on')) }}{% endif %}
+  {% for error in f.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+</div>
+{% endmacro %}
+{% block content %}
+<p class="label page-kicker">{{ shop_name }} · Checkout</p>
+<h1 class="display page-title">Checkout</h1>
+<div class="checkout">
+  <form class="checkout-form" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <h2 class="label section-title">Your details</h2>
+    {{ field(form.full_name, autocomplete='name') }}
+    {{ field(form.email, type='email', autocomplete='email') }}
+    {{ field(form.phone, type='tel', autocomplete='tel') }}
+    {{ field(form.address, autocomplete='street-address') }}
+    <button class="btn btn--wide" type="submit">Place order · {{ total|usd }}</button>
+    <p class="checkout-form__note">Scan the KHQR code with your banking app, then place your order.</p>
+  </form>
+
+  <aside class="checkout-side">
+    <section class="khqr" aria-labelledby="khqr-title">
+      <h2 id="khqr-title" class="label section-title">Pay with KHQR</h2>
+      {% if qr_image %}
+      <img class="khqr__image" src="{{ qr_image }}" alt="KHQR payment code for {{ total|usd }}">
+      <p class="label khqr__amount">{{ total|usd }} · Ref {{ reference }}</p>
+      <form class="khqr__check" method="post" action="{{ url_for('storefront.checkout_payment_status') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn--line" type="submit">Check payment status</button>
+      </form>
+      {% if payment %}
+      {% set status, message = payment %}
+      <p class="khqr__status khqr__status--{{ status }}" role="status">
+        {%- if status == 'paid' %}Paid. You can place your order.
+        {%- elif status == 'unpaid' %}Not paid yet. Scan the code, then check again.
+        {%- elif status == 'unconfigured' %}{{ message }}
+        {%- else %}Could not check the payment: {{ message }}{% endif -%}
+      </p>
+      {% endif %}
+      {% else %}
+      <p class="khqr__error">{{ qr_error }}</p>
+      {% endif %}
+    </section>
+    <section class="order-summary" aria-labelledby="summary-title">
+      <h2 id="summary-title" class="label section-title">Order summary</h2>
+      <ul class="summary-lines">
+        {% for line in lines %}
+        <li><span>{{ line.product.name }} × {{ line.quantity }}</span><span>{{ line.subtotal|usd }}</span></li>
+        {% endfor %}
+      </ul>
+      <p class="summary-total"><span class="label">Total</span><strong>{{ total|usd }}</strong></p>
+    </section>
+  </aside>
+</div>
+{% endblock %}

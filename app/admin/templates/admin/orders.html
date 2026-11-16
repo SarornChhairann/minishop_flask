@@ -1,0 +1,30 @@
+{% extends "admin/base.html" %}
+{% block title %}Orders{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1 class="page-head__title">Order history</h1>
+</header>
+{% if orders %}
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr><th scope="col">Order ID</th><th scope="col">Customer name</th><th scope="col">Phone number</th><th scope="col" class="num">Total amount</th><th scope="col">Order date</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td>#{{ order.id }}</td>
+        <td>{{ order.customer_name }}</td>
+        <td>{{ order.phone }}</td>
+        <td class="num">{{ order.total|usd }}</td>
+        <td>{{ order.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+        <td class="actions"><a href="{{ url_for('admin.order_detail', order_id=order.id) }}">View order details<span class="visually-hidden"> for #{{ order.id }}</span></a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="empty">No orders yet. They appear here after a guest checks out.</p>
+{% endif %}
+{% endblock %}
