@@ -164,7 +164,7 @@ textarea.field__input { min-height: 110px; resize: vertical; }
 .checkout-side { display: grid; gap: 24px; position: sticky; top: 76px; }
 .khqr { background: var(--loam); color: var(--cream); border: var(--rule); padding: 20px; display: grid; gap: 12px; justify-items: center; }
 .khqr .section-title { color: var(--cream-muted); justify-self: start; margin: 0; }
-.khqr__image { width: 100%; max-width: 280px; }
+.khqr__image { width: 100%; max-width: 300px; height: auto; }
 .khqr__amount { color: var(--red); }
 .khqr__error { font-size: 14px; color: var(--cream); }
 .khqr__check { justify-self: stretch; }
