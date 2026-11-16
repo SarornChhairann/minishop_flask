@@ -1,4 +1,4 @@
-"""Starter catalogue for Psaa, a small clothes shop. Photos live in seed_images/."""
+"""Starter catalogue for Loom, a small clothes shop. Photos live in seed_images/."""
 
 PRODUCTS = [
     {

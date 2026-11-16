@@ -12,6 +12,14 @@ SESSION_KEY = "admin_user"
 OPEN_ENDPOINTS = {"admin.login", "admin.static"}
 
 
+@bp.app_context_processor
+def inject_shop():
+    return {
+        "shop_name": current_app.config["SHOP_NAME"],
+        "shop_tagline": current_app.config["SHOP_TAGLINE"],
+    }
+
+
 @bp.before_request
 def require_login():
     if request.endpoint in OPEN_ENDPOINTS:

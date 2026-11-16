@@ -1,6 +1,6 @@
-# Psaa
+# Loom
 
-Psaa (Khmer for "market") is a home-objects shop built with Flask, styled as a warm print catalogue. Guests browse, add to a cart and check out with a Bakong KHQR code. An admin site at `/admin` manages products and order history.
+Loom is a clothes shop built with Flask, styled as a warm print catalogue. Guests browse, add to a cart and check out with a Bakong KHQR code. An admin site at `/admin` manages products and order history.
 
 - Storefront: `/`, `/product/<id>`, `/cart`, `/checkout`, `/order/<id>`
 - Admin: `/admin/login`, `/admin/products`, `/admin/products/new`, `/admin/products/<id>/edit`, `/admin/orders`, `/admin/orders/<id>`

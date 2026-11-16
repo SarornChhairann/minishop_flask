@@ -7,7 +7,7 @@ from sqlalchemy.pool import NullPool
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
-DEFAULT_SHOP_NAME = "Psaa"
+DEFAULT_SHOP_NAME = "Loom"
 DEFAULT_SHOP_TAGLINE = "Everyday clothes, cut simply."
 
 
